@@ -6,6 +6,16 @@ from pprint import pprint
 from datetime import datetime
 import datetime
 import collections
+import feedparser
+
+# create the html file
+# and put in the <head> stuff
+fo = open("index.html", "w")
+fi = open("head.html", "r")
+fo.write(fi.read())
+fi.close()
+
+print >> fo, "<div class=\"page-header\"><h1><small>The Schedule</small></h1></div>"
 
 # seatgeek API reference
 # curl 'http://api.seatgeek.com/2/performers?slug=new-york-mets'
@@ -47,5 +57,27 @@ for key in ordered_teams:
 		else:
 			message = "No Games Today"
 			
-	print key
-	print message
+	print >> fo,"<div class=\"panel panel-default\"><div class=\"panel-heading\"><h3 class=\"panel-title\">%s</h3></div>" % key
+	print >> fo,"<div class=\"panel-body\">%s</div></div>" % message
+	
+
+# get blog posts using feedparser
+# list of blogs to pull from:
+feeds = ["http://www.battersbox.ca/backend/geeklog.rdf","http://feeds.feedburner.com/DrunkJaysFans","http://www.humandchuck.com/feeds/posts/default"]
+
+# print posts to the html file
+print >> fo, "<div class=\"page-header\"><h1><small>The Blogs</small></h1></div>"
+
+for feed in feeds:
+	d = feedparser.parse(feed)
+	print >>fo, "<br><h4>%s</h4>" % d['feed']['title']
+	for i in range(5):
+		post = "<h4> <a href=%s>%s</a> </h4>" % (d.entries[i]['link'],d['entries'][i]['title'])
+		post2 = post.encode('utf-8','ignore')
+		print >> fo, post2
+
+fi = open("foot.html", "r")
+fo.write(fi.read())
+
+fi.close()
+fo.close()
