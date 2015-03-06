@@ -24,7 +24,6 @@ fi.close()
 link_count=0
 
 feeds = ["http://www.battersbox.ca/backend/geeklog.rdf",
-		"http://feeds.feedburner.com/DrunkJaysFans",
 		"http://www.humandchuck.com/feeds/posts/default",
 		"http://www.bluebirdbanter.com/rss"]
 
@@ -116,12 +115,13 @@ def get_game_scores(teamdir):
 
 # scores
 ordered_teams = collections.OrderedDict(teams)
-print >> fo, "<div class=\"page-header\"><h1><small>The Scores</small></h1></div>"
+print >> fo, "<h5 class=\"header\">The Scores</small></h5> <ul class=\"collection with-header\">"
+
 for key in ordered_teams:
 	year,month,month_word,day = get_yesterday()
 	link_count = 0
 	message = ''
-	print >> fo,"<div class=\"panel panel-default\"><div class=\"panel-heading\"><h3 class=\"panel-title\">%s</h3></div>" % levels[key]
+	print >> fo,"<li class=\"collection-header\"><b>%s</b></li>" % levels[key]
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
@@ -139,15 +139,17 @@ for key in ordered_teams:
 				message += "%s %s - %s %s" % (hometeam,homeruns,awayteam,awayruns)
 	if link_count == 0:
 		message = "No Game Yesterday"
-	print >> fo,"<h4><div class=\"panel-body\">%s</div></h4></div>" % message
+	print >> fo,"<li class=\"collection-item\">%s</li>" % message
+
+print >> fo, "</ul>"
 
 #schedule
-print >> fo, "<div class=\"page-header\"><h1><small>The Schedule</small></h1></div>"
+print >> fo, "<h5 class=\"header\">The Schedule</small></h5> <ul class=\"collection with-header\">"
 for key in ordered_teams:
 	year,month,month_word,day = get_today()
 	link_count = 0
 	message = ''
-	print >> fo,"<div class=\"panel panel-default\"><div class=\"panel-heading\"><h3 class=\"panel-title\">%s</h3></div>" % levels[key]
+	print >> fo,"<li class=\"collection-header\"><b>%s</b></li>" % levels[key]
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
@@ -160,24 +162,32 @@ for key in ordered_teams:
 			link_count = link_count + 1
 			jaysuri = jaysuri[:-1]
 			jaysdir = url + "/" + jaysuri
+                        print jaysdir
 			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam) = get_game_values(jaysdir)
 			message += "%s against %s at %s %s at %s <br>%s %s against %s %s<br>" % (awayteam, hometeam, gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname)
 	if link_count == 0:
 		message = "No Game Today"
-	print >> fo,"<h4><div class=\"panel-body\">%s</div></h4></div>" % message
+	print >> fo,"<li class=\"collection-item\">%s</li>" % message
+
+print >> fo, "</ul>"
 
 # get blog posts using feedparser
 # list of blogs to pull from:
 # print posts to the html file
-print >> fo, "<div class=\"page-header\"><h1><small>The Blogs</small></h1></div>"
+print >> fo, "<div class=\"page-header\"><h5>The Blogs</h5></div>"
+print >> fo, "<ul class=\"collapsible\" data-collapsible=\"accordion\">"
 
 for feed in feeds:
+        print feed
 	d = feedparser.parse(feed)
-	print >>fo, "<br><h4>%s</h4>" % d['feed']['title']
+	print >>fo, "<li><div class=\"collapsible-header\"><h6>%s</h6></div>" % d['feed']['title']
+        print >>fo, "<div class=\"collapsible-body\">"
 	for i in range(5):
-		post = "<h4> <a href=%s>%s</a> </h4>" % (d.entries[i]['link'],d['entries'][i]['title'])
+		post = "<h6> <a href=%s>%s</a> </h6>" % (d.entries[i]['link'],d['entries'][i]['title'])
 		post2 = post.encode('utf-8','ignore')
 		print >> fo, post2
+        print >> fo, "</div></li>"
+print >> fo, "</ul>"
 
 #add the footer
 fi = open("foot.html", "r")
