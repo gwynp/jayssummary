@@ -145,7 +145,7 @@ for key in ordered_teams:
 			jaysdir = url + "/" + jaysuri
 			(hometeam,awayteam,homeruns,awayruns,box) = get_game_scores(jaysdir)
 			if hometeam:
-				message += "%s %s - %s %s <br><a href=%s>summary</a><br>" % (hometeam,homeruns,awayteam,awayruns,box)
+				message += "%s %s - %s %s &nbsp;&nbsp;<a href=%s><i class=\"material-icons\">reorder</i></a><br>" % (hometeam,homeruns,awayteam,awayruns,box)
 	if link_count == 0:
 		message = "No Game Yesterday"
 	print >> fo,"<li class=\"collection-item\">%s</li>" % message
@@ -173,7 +173,7 @@ for key in ordered_teams:
 			jaysdir = url + "/" + jaysuri
                         print jaysdir
 			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box) = get_game_values(jaysdir)
-			message += "%s against %s at %s %s at %s <br>%s %s against %s %s<br><a href=%s>preview</a>" % (awayteam, hometeam, gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,box)
+			message += "%s against %s at %s %s at %s &nbsp;&nbsp;<a href=%s><i class=\"material-icons\">info_outline</i></a><br>%s %s against %s %s" % (awayteam, hometeam, gametime, timezone, venue, box, homefirstname, homesurname, awayfirstname, awaysurname)
 	if link_count == 0:
 		message = "No Game Today"
 	print >> fo,"<li class=\"collection-item\">%s</li>" % message
