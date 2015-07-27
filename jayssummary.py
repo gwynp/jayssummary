@@ -62,6 +62,9 @@ def get_yesterday():
 # schedule values
 def get_game_values(teamdir):
 	linescore = jaysdir + '/linescore.xml'
+	boxdate = linescore[-40:-14]
+	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
+	print box
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -90,11 +93,16 @@ def get_game_values(teamdir):
 	if not homefirstname:
 		homefirstname = 'TBD'
 
-	return gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname, awayteam, hometeam
+	return gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname, awayteam, hometeam, box
 
 #yesterdays scores
 def get_game_scores(teamdir):
 	linescore = jaysdir + '/boxscore.json'
+	#http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
+	boxdate = linescore[-40:-14]
+	print boxdate
+	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
+	print box
 	print linescore
 	opener = urllib2.build_opener()
 	try:
@@ -104,14 +112,14 @@ def get_game_scores(teamdir):
 		awayteam = json_data["data"]["boxscore"]['away_fname']
 		homeruns = json_data["data"]["boxscore"]['linescore']['home_team_runs']
 		awayruns = json_data["data"]["boxscore"]['linescore']['away_team_runs']
-		return hometeam,awayteam,homeruns,awayruns
+		return hometeam,awayteam,homeruns,awayruns,box
 	except:
 		hometeam=''
 		awayteam=''
 		homeruns=0
 		awayruns=0
 		print "problem with URL %s" % linescore
-		return hometeam,awayteam,homeruns,awayruns
+		return hometeam,awayteam,homeruns,awayruns,box
 
 # scores
 ordered_teams = collections.OrderedDict(teams)
@@ -125,6 +133,7 @@ for key in ordered_teams:
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
+	
 	r  = requests.get(url)
 	data = r.text
 	soup = BeautifulSoup(data)
@@ -134,9 +143,9 @@ for key in ordered_teams:
 			link_count = link_count + 1
 			jaysuri = jaysuri[:-1]
 			jaysdir = url + "/" + jaysuri
-			(hometeam,awayteam,homeruns,awayruns) = get_game_scores(jaysdir)
+			(hometeam,awayteam,homeruns,awayruns,box) = get_game_scores(jaysdir)
 			if hometeam:
-				message += "%s %s - %s %s" % (hometeam,homeruns,awayteam,awayruns)
+				message += "%s %s - %s %s <br><a href=%s>summary</a><br>" % (hometeam,homeruns,awayteam,awayruns,box)
 	if link_count == 0:
 		message = "No Game Yesterday"
 	print >> fo,"<li class=\"collection-item\">%s</li>" % message
@@ -163,8 +172,8 @@ for key in ordered_teams:
 			jaysuri = jaysuri[:-1]
 			jaysdir = url + "/" + jaysuri
                         print jaysdir
-			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam) = get_game_values(jaysdir)
-			message += "%s against %s at %s %s at %s <br>%s %s against %s %s<br>" % (awayteam, hometeam, gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname)
+			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box) = get_game_values(jaysdir)
+			message += "%s against %s at %s %s at %s <br>%s %s against %s %s<br><a href=%s>preview</a>" % (awayteam, hometeam, gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,box)
 	if link_count == 0:
 		message = "No Game Today"
 	print >> fo,"<li class=\"collection-item\">%s</li>" % message
