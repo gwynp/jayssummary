@@ -173,7 +173,7 @@ for key in ordered_teams:
 			jaysdir = url + "/" + jaysuri
                         print jaysdir
 			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box) = get_game_values(jaysdir)
-			message += "%s against %s at %s %s at %s &nbsp;&nbsp;<a href=%s><i class=\"material-icons\">info_outline</i></a><br>%s %s against %s %s" % (awayteam, hometeam, gametime, timezone, venue, box, homefirstname, homesurname, awayfirstname, awaysurname)
+			message += "%s at %s at %s %s at %s &nbsp;&nbsp;<a href=%s><i class=\"material-icons\">info_outline</i></a><br>%s %s against %s %s<br>" % (awayteam, hometeam, gametime, timezone, venue, box, awayfirstname, awaysurname,homefirstname, homesurname)
 	if link_count == 0:
 		message = "No Game Today"
 	print >> fo,"<li class=\"collection-item\">%s</li>" % message
