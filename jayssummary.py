@@ -12,6 +12,11 @@ import httplib
 import urllib2
 import json
 import feedparser
+import tinys3
+
+aws_access_key = os.environ.get('AWSAccessKeyId')
+aws_secret_key = os.environ.get('AWSSecretKey')
+aws_jayssummary_bucket = os.environ.get('AWSJaysSummaryBucket')
 
 # create the html file
 # and put in the <head> stuff
@@ -205,3 +210,13 @@ fo.write(fi.read())
 # close files
 fi.close()
 fo.close()
+
+# copy to AWs S3 bucket
+print aws_access_key
+print aws_secret_key
+print aws_jayssummary_bucket
+conn = tinys3.Connection(aws_access_key,aws_secret_key,tls=True,endpoint='s3-us-west-2.amazonaws.com')
+
+findex = open('/opt/code/jayssummary/index.html','rb')
+conn.upload('index.html',findex,'jayssummary.com')
+findex.close()
