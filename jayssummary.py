@@ -14,9 +14,14 @@ import json
 import feedparser
 import tinys3
 
+# get the S3 keys and bucket name from the environment
 aws_access_key = os.environ.get('AWSAccessKeyId')
 aws_secret_key = os.environ.get('AWSSecretKey')
 aws_jayssummary_bucket = os.environ.get('AWSJaysSummaryBucket')
+
+# set the working directory
+homedir='/opt/code/jayssummary'
+os.chdir(homedir)
 
 # create the html file
 # and put in the <head> stuff
@@ -25,7 +30,7 @@ fi = open("head.html", "r")
 fo.write(fi.read())
 fi.close()
 
-
+# initialise the data we'll need
 link_count=0
 
 feeds = ["http://www.battersbox.ca/backend/geeklog.rdf",
@@ -67,9 +72,12 @@ def get_yesterday():
 # schedule values
 def get_game_values(teamdir):
 	linescore = jaysdir + '/linescore.xml'
+        # extract the boxscore string from the xml url
 	boxdate = linescore[-40:-14]
+        # build the box url
 	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
-	print box
+	#print box
+        #open the games xml file and extract the variables we need
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -103,7 +111,8 @@ def get_game_values(teamdir):
 #yesterdays scores
 def get_game_scores(teamdir):
 	linescore = jaysdir + '/boxscore.json'
-	#http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
+        # url is in this format
+	# http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
 	boxdate = linescore[-40:-14]
 	print boxdate
 	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
