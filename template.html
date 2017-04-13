@@ -1,0 +1,95 @@
+<html>
+    <head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	   	<!-- Compiled and minified CSS -->
+  		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.1/css/materialize.min.css">
+    	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.1.2/css/material-design-iconic-font.min.css">
+  		<link rel="css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
+     	<title>Jays Summary</title>
+     	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+    
+  </head>
+
+  <body>
+  <div class="container">
+
+	  <nav>
+	  	<div class="nav-wrapper white lighten-1 grey-text">
+	  		<a href="#" class="brand-logo left blue-text darken-2">{{ titledate }}</a>
+	  		<a href="#" class="brand-logo right blue-text darken-2">Jays Summary</a>
+	  	</div>
+	  </nav>
+  	<div class="row">
+  		<div class="section">
+  			<div>
+    			<h5 class="left-align">Yesterday</h5>
+  			</div>
+		  	{% for score in scores %}
+		  	<div class="card">
+    		<div class="card-content">
+				{{ score[0] }}: {{ score[1]}}  {{score[3]}} -  {{score[2]}} {{score[4]}}.  <a href={{score[5]}}>boxscore</a><br>
+			</div>
+			</div>
+			{% endfor %}
+		</div>
+		<div class="divider"></div>
+		<div class="section">
+			<div>
+    			<h5 class="left-align">Today</h5>
+  			</div>
+			{% for game in games %}
+			<div class="card">
+    		<div class="card-content">
+    			<!--level,gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box-->
+				{{ game[0] }}: {{ game[8]}} ({{game[6]}} {{game[7]}}) at {{game[9]}} ({{game[4]}} {{game[5]}}) -  {{game[1]}} {{game[2]}} at {{game[3]}}<br>
+			</div>
+			</div>
+			{% endfor %}
+		</div>
+		<div class="divider"></div>
+	</row> <!-- row -->
+	<div class="row">
+	<div class="col s12">
+			<div>
+    			<h5 class="left-align">Opinion</h5>
+  			</div>
+			{% for name, postsdict in posts.iteritems() %}
+				<div class="card white grey-text darken-4">
+				<div class="card-content grey-text darken-4">
+            		<span class="card-title">{{name}}</span>
+					{% for title,url in postsdict.items() %}
+					&bull; <a href={{url}}>{{title}}</a><br>
+					{% endfor %}
+				</div>
+				</div>
+			{% endfor %}
+
+	</div>
+	</div>
+
+	</div>
+
+	<footer class="page-footer white lighten-1 grey-text">
+          
+          
+            <div class="container">
+            	<div class="row>"
+            	<div class="col s12">
+		            <a href="mailto:gwyn@gwynprice.ca class="brand-logo left blue-text darken-2">Gwyn Price</a>
+			  		<a href="https://twitter.com/AreJaysPlaying" class="brand-logo right blue-text darken-2">Twitter</a>
+	  			</div>
+	  		</div>
+	  		</div>
+        </footer>
+
+	</div> <!-- /container -->
+
+
+
+ 	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+ 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/js/materialize.min.js"></script>
+
+
+  </body>
+</html>
