@@ -28,7 +28,7 @@ os.chdir(homedir)
 link_count=0
 
 feeds = ["http://www.battersbox.ca/backend/geeklog.rdf",
-		"http://www.humandchuck.com/?format=rss",
+		"http://www.humandchuck.com/wwwhumandchuckcom?format=rss",
 		"http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$",
 		"https://feeds.thescore.com/baseball/teams/4.rss",
 		"https://bunttothegap.com/feed/podcast/",
@@ -191,7 +191,7 @@ for key in ordered_teams:
 # get blog posts using feedparser
 allposts={}
 for feed in feeds:
-	posts={}
+	posts=collections.OrderedDict()
 	d = feedparser.parse(feed)
 	for i in range(5):
 		#postlink,posttitle = (d.entries[i]['link'],d['entries'][i]['title'])
@@ -199,12 +199,14 @@ for feed in feeds:
 		postlink = d.entries[i]['link']
 		posttitle = d['entries'][i]['title']
 		posts[posttitle]=postlink
+		print i
+		print posttitle
 	allposts[feedname]=posts
+	print posts
 
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"])) 
 template = env.get_template( "template.html") 
 result = template.render( titledate=titledate, scores=scores, games=games, posts=allposts)
-print result.encode('utf-8')
 with open("index.html", "wb") as fh:
     fh.write(result.encode('utf-8'))
 fh.close()
