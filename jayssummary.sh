@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source $HOME/.bash_profile
 LOGFILE=/var/log/jayssummary.log
 WORKDIR=/opt/code/jayssummary
 

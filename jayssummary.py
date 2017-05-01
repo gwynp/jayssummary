@@ -27,14 +27,15 @@ homedir='/opt/code/jayssummary'
 os.chdir(homedir)
 link_count=0
 
-feeds = ["http://www.battersbox.ca/backend/geeklog.rdf",
-		"http://www.humandchuck.com/wwwhumandchuckcom?format=rss",
-		"http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$",
-		"https://feeds.thescore.com/baseball/teams/4.rss",
-		"https://bunttothegap.com/feed/podcast/",
-		"http://www.jaysinthehouse.com/feeds/posts/default",
-		"http://www.bluebirdbanter.com/rss"]
-
+feeds = {
+		'Battersbox': 'http://www.battersbox.ca/backend/geeklog.rdf',
+		'Hum and Chuck': 'http://www.humandchuck.com/wwwhumandchuckcom?format=rss',
+		'Toronto Sun': 'http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$',
+		'The Score': 'https://feeds.thescore.com/baseball/teams/4.rss',
+		'Bunt to the Gap': 'https://bunttothegap.com/feed/podcast/',
+		'Jays in the House': 'http://www.jaysinthehouse.com/feeds/posts/default',
+		'Bluebird Banter': 'http://www.bluebirdbanter.com/rss'
+}
 #feeds = ["http://www.bluebirdbanter.com/rss"]
 
 teams = (("mlb","tormlb"),
@@ -77,7 +78,7 @@ def get_game_values(teamdir):
         # build the box url
 	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
 	#print box
-        #open the games xml file and extract the variables we need
+    #open the games xml file and extract the variables we need
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -115,24 +116,27 @@ def get_game_scores(teamdir):
         # url is in this format
 	# http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
 	boxdate = linescore[-40:-14]
+	
 	#print "boxdate = " + boxdate
 	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
 	opener = urllib2.build_opener()
 	try:
+		print "linescore is" + linescore
 		f = opener.open(linescore)
 		json_data = json.loads(f.read())
 		hometeam = json_data["data"]["boxscore"]['home_fname']
 		awayteam = json_data["data"]["boxscore"]['away_fname']
 		homeruns = json_data["data"]["boxscore"]['linescore']['home_team_runs']
 		awayruns = json_data["data"]["boxscore"]['linescore']['away_team_runs']
-		return hometeam,awayteam,homeruns,awayruns,box
+		#pitcher = json_data["data"]["boxscore"]['pitching']
+		#print pitcher
 	except:
 		hometeam=''
 		awayteam=''
 		homeruns=0
 		awayruns=0
 		print "problem with URL %s" % linescore
-		return hometeam,awayteam,homeruns,awayruns,box
+	return hometeam,awayteam,homeruns,awayruns,box
 
 # scores
 ordered_teams = collections.OrderedDict(teams)
@@ -189,21 +193,24 @@ for key in ordered_teams:
 
 			
 # get blog posts using feedparser
+# feed names and urls are in feeds dict
+# loop through this and pass the urls to feedparser
+# and get the most recent 5 posts
+# and everything to allposts dict
 allposts={}
-for feed in feeds:
+for feedname, feedurl in feeds.iteritems():
 	posts=collections.OrderedDict()
-	d = feedparser.parse(feed)
+	d = feedparser.parse(feedurl)
 	for i in range(5):
-		#postlink,posttitle = (d.entries[i]['link'],d['entries'][i]['title'])
-		feedname = d['feed']['title']
 		postlink = d.entries[i]['link']
 		posttitle = d['entries'][i]['title']
 		posts[posttitle]=postlink
-		print i
-		print posttitle
+		#print i
+		#print posttitle
 	allposts[feedname]=posts
 	print posts
 
+# use jinja2 and the template.html to produce the index.html file
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"])) 
 template = env.get_template( "template.html") 
 result = template.render( titledate=titledate, scores=scores, games=games, posts=allposts)
@@ -216,7 +223,8 @@ print aws_access_key
 print aws_secret_key
 print aws_jayssummary_bucket
 conn = tinys3.Connection(aws_access_key,aws_secret_key,tls=True,endpoint='s3-us-west-2.amazonaws.com')
-
-findex = open('/opt/code/jayssummary/index.html','rb')
+current_dir = os.getcwd()
+index_file = current_dir + '/index.html'
+findex = open(index_file,'rb')
 conn.upload('index.html',findex,'jayssummary.com')
 findex.close()
