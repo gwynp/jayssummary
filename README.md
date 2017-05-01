@@ -1,3 +1,3 @@
-A python script that pulls schedule information from the Seatgeek.com API for all the Jays teams.
+A python script that pulls schedule and results information from MLB for all the Jays teams and outputs a summary html page.
 
 http://jayssummary.com
