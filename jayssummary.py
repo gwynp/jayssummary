@@ -23,7 +23,7 @@ aws_jayssummary_bucket = 'jaysummary.com'
 
 # set the working directory
 titledate='{dt:%A} {dt:%B} {dt.day}, {dt.year}'.format(dt=datetime.datetime.now())
-homedir='/opt/code/jayssummary'
+homedir=dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(homedir)
 link_count=0
 
@@ -54,6 +54,39 @@ levels = {
 	'asx' : 'Short Season A'
 }
 
+boxteams = {
+		"tor" : "blue-jays",
+		"tba" : "rays",
+		"atlmlb" : "Braves",
+		"balmlb" : "Orioles",
+		"bosmlb" : "Red Sox",
+		"chnmlb" : "Cubs",
+		"chamlb" : "White Sox",
+		"cinmlb" : "Reds",
+		"clemlb" : "Indians",
+		"colmlb" : "Rockies",
+		"detmlb" : "Tigers",
+		"houmlb" : "Astros",
+		"kcamlb" : "Royals",
+		"lanmlb" : "Dodgers",
+		"miamlb" : "Marlins",
+		"milmlb" : "Brewers",
+		"minmlb" : "Twins",
+		"nyamlb" : "Yankees",
+		"nymmlb" : "Mets",
+		"oakmlb" : "A's",
+		"phimlb" : "Phillies",
+		"pitmlb" : "Pirates",
+		"sdnmlb" : "Padres",
+		"seamlb" : "Mariners",
+		"sfnmlb" : "Giants",
+		"slnmlb" : "Cardinals",
+		"tbamlb" : "Rays",
+		"texmlb" : "Rangers",
+		"tormlb" : "Jays",
+		"wasmlb" : "Nationals",
+}
+
 # date variables for today and yesterday
 def get_today():
 	year = datetime.date.today().strftime("%Y")
@@ -68,17 +101,20 @@ def get_yesterday():
 	month = yesterday.strftime("%m")
 	month_word = yesterday.strftime("%B")
 	day = yesterday.strftime("%d")
-	return (year,month,month_word,day)
+	yyyymmdd = yesterday.strftime("%Y%m%d")
+	return (year,month,month_word,day,yyyymmdd)
 
 # schedule values
 def get_game_values(teamdir):
 	linescore = jaysdir + '/linescore.xml'
+	print linescore
         # extract the boxscore string from the xml url
-	boxdate = linescore[-40:-14]
+	#boxdate = linescore[-40:-14]
         # build the box url
-	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
+	#box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
 	#print box
     #open the games xml file and extract the variables we need
+	#https://www.mlb.com/gameday/rays-vs-blue-jays/2017/06/13/491073#game_state=final,lock_state=final,game_tab=box,game=491073
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -96,6 +132,7 @@ def get_game_values(teamdir):
 			awayteam = value
 		if name == "home_team_city":
 			hometeam = value
+
 	try:
 		homefirstname = tree.find('./home_probable_pitcher').attrib['first_name']
 		homesurname = tree.find('./home_probable_pitcher').attrib['last_name']
@@ -108,17 +145,21 @@ def get_game_values(teamdir):
 		homesurname=''
 
 	print "done for %s %s" % (hometeam, awayteam)
-	return gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname, awayteam, hometeam, box
+	return gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname, awayteam, hometeam
 
 #yesterdays scores
-def get_game_scores(teamdir):
+def get_game_scores(teamdir,league):
 	linescore = jaysdir + '/boxscore.json'
         # url is in this format
 	# http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
 	boxdate = linescore[-40:-14]
-	
+
 	#print "boxdate = " + boxdate
 	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
+		#https://www.mlb.com/gameday/rays-vs-blue-jays/2017/06/13/491073#game_state=final,lock_state=final,game_tab=box,game=491073
+	box_start='https://www.mlb.com/gameday/'
+	box_end='#game_state=final,lock_state=final,game_tab=box,game=491073'
+
 	opener = urllib2.build_opener()
 	try:
 		print "linescore is" + linescore
@@ -128,6 +169,10 @@ def get_game_scores(teamdir):
 		awayteam = json_data["data"]["boxscore"]['away_fname']
 		homeruns = json_data["data"]["boxscore"]['linescore']['home_team_runs']
 		awayruns = json_data["data"]["boxscore"]['linescore']['away_team_runs']
+		game_pk = json_data["data"]['boxscore']["game_pk"]
+		home_team_code = json_data["data"]['boxscore']["home_team_code"]
+		away_team_code = json_data["data"]["boxscore"]['away_team_code']
+
 		#pitcher = json_data["data"]["boxscore"]['pitching']
 		#print pitcher
 	except:
@@ -135,7 +180,21 @@ def get_game_scores(teamdir):
 		awayteam=''
 		homeruns=0
 		awayruns=0
+		game_pk=0
+		home_team_code=0
 		print "problem with URL %s" % linescore
+
+	# make the boxscore url
+	if league == 'mlb':
+		print "game_pk is %s " % game_pk
+		print "home_team_code is %s" % home_team_code
+		print "away_team_code is %s" % away_team_code
+		box_uri = boxteams[away_team_code] + "-vs-" + boxteams[home_team_code] +"/"
+		box = box_start+box_uri+ game_pk+box_end
+		print "box is %s" % box
+	else:
+		box = "http://www.milb.com/scoreboard/index.jsp?cid=&lid=&org=141&sc=&sid=milb&t=affiliate&ymd=%s" % yyyymmdd
+		print "box is %s" % box
 	return hometeam,awayteam,homeruns,awayruns,box
 
 # scores
@@ -144,11 +203,11 @@ ordered_teams = collections.OrderedDict(teams)
 scores=[]
 link_count = 0
 for key in ordered_teams:
-	year,month,month_word,day = get_yesterday()
+	year,month,month_word,day,yyyymmdd = get_yesterday()
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
-	
+
 	r  = requests.get(url)
 	data = r.text
 	soup = BeautifulSoup(data)
@@ -158,13 +217,13 @@ for key in ordered_teams:
 			link_count = link_count + 1
 			jaysuri = jaysuri[:-1]
 			jaysdir = url + "/" + jaysuri
-			(hometeam,awayteam,homeruns,awayruns,box) = get_game_scores(jaysdir)
+			(hometeam,awayteam,homeruns,awayruns,box) = get_game_scores(jaysdir,league)
 			#print "hometeam" + hometeam
 			if hometeam:
 				#print "in here"
 				level=levels[key]
 				scores.append([level,hometeam,awayteam,homeruns,awayruns,box])
-			
+
 
 #games
 game_count = 0
@@ -188,10 +247,10 @@ for key in ordered_teams:
 			#print "jaysdir = " + jaysdir
 			game_count = game_count + 1
 			level=levels[key]
-			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box) = get_game_values(jaysdir)
-			games.append([level,gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam,box])
+			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam) = get_game_values(jaysdir)
+			games.append([level,gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam])
 
-			
+
 # get blog posts using feedparser
 # feed names and urls are in feeds dict
 # loop through this and pass the urls to feedparser
@@ -208,11 +267,11 @@ for feedname, feedurl in feeds.iteritems():
 		#print i
 		#print posttitle
 	allposts[feedname]=posts
-	print posts
+	#print posts
 
 # use jinja2 and the template.html to produce the index.html file
-env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"])) 
-template = env.get_template( "template.html") 
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"]))
+template = env.get_template( "template.html")
 result = template.render( titledate=titledate, scores=scores, games=games, posts=allposts)
 with open("index.html", "wb") as fh:
     fh.write(result.encode('utf-8'))
