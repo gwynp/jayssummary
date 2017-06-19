@@ -168,9 +168,9 @@ def get_game_scores(teamdir,league):
 	# make the boxscore url
 	if league == 'mlb':
 		box_start='https://www.mlb.com/gameday/'
-		box_end='#game_state=final,lock_state=final,game_tab=box,game=491073'
+		box_end='#game_state=final,lock_state=final,game_tab=box,game='
 		box_uri = boxteams[away_team_code] + "-vs-" + boxteams[home_team_code] +"/"
-		box = box_start+box_uri+ game_pk+box_end
+		box = box_start+box_uri+ game_pk+box_end+game_pk
 	else:
 		box = "http://www.milb.com/scoreboard/index.jsp?cid=&lid=&org=141&sc=&sid=milb&t=affiliate&ymd=%s" % yyyymmdd
 	return hometeam,awayteam,homeruns,awayruns,box
