@@ -57,34 +57,32 @@ levels = {
 boxteams = {
 		"tor" : "blue-jays",
 		"tba" : "rays",
-		"atlmlb" : "Braves",
-		"balmlb" : "Orioles",
-		"bosmlb" : "Red Sox",
-		"chnmlb" : "Cubs",
-		"chamlb" : "White Sox",
-		"cinmlb" : "Reds",
-		"clemlb" : "Indians",
-		"colmlb" : "Rockies",
-		"detmlb" : "Tigers",
-		"houmlb" : "Astros",
-		"kcamlb" : "Royals",
-		"lanmlb" : "Dodgers",
-		"miamlb" : "Marlins",
-		"milmlb" : "Brewers",
-		"minmlb" : "Twins",
-		"nyamlb" : "Yankees",
-		"nymmlb" : "Mets",
-		"oakmlb" : "A's",
-		"phimlb" : "Phillies",
-		"pitmlb" : "Pirates",
-		"sdnmlb" : "Padres",
-		"seamlb" : "Mariners",
-		"sfnmlb" : "Giants",
-		"slnmlb" : "Cardinals",
-		"tbamlb" : "Rays",
-		"texmlb" : "Rangers",
-		"tormlb" : "Jays",
-		"wasmlb" : "Nationals",
+		"atl" : "braves",
+		"bal" : "orioles",
+		"bos" : "red-sox",
+		"chn" : "cubs",
+		"cha" : "white-sox",
+		"cin" : "reds",
+		"cle" : "indians",
+		"col" : "rockies",
+		"det" : "tigers",
+		"hou" : "astros",
+		"kca" : "royals",
+		"lan" : "dodgers",
+		"mia" : "marlins",
+		"mil" : "brewers",
+		"min" : "twins",
+		"nya" : "yankees",
+		"nym" : "mets",
+		"oak" : "a's",
+		"phi" : "phillies",
+		"pit" : "pirates",
+		"sdn" : "padres",
+		"sea" : "mariners",
+		"sfn" : "giants",
+		"sln" : "cardinals",
+		"tex" : "rangers",
+		"was" : "nationals",
 }
 
 # date variables for today and yesterday
@@ -108,13 +106,6 @@ def get_yesterday():
 def get_game_values(teamdir):
 	linescore = jaysdir + '/linescore.xml'
 	print linescore
-        # extract the boxscore string from the xml url
-	#boxdate = linescore[-40:-14]
-        # build the box url
-	#box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
-	#print box
-    #open the games xml file and extract the variables we need
-	#https://www.mlb.com/gameday/rays-vs-blue-jays/2017/06/13/491073#game_state=final,lock_state=final,game_tab=box,game=491073
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -150,16 +141,6 @@ def get_game_values(teamdir):
 #yesterdays scores
 def get_game_scores(teamdir,league):
 	linescore = jaysdir + '/boxscore.json'
-        # url is in this format
-	# http://mlb.mlb.com/mlb/gameday/index.jsp?gid=2015_07_26_balmlb_tbamlb_1
-	boxdate = linescore[-40:-14]
-
-	#print "boxdate = " + boxdate
-	box = "http:///mlb.mlb.com/mlb/gameday/index.jsp?gid=" + boxdate
-		#https://www.mlb.com/gameday/rays-vs-blue-jays/2017/06/13/491073#game_state=final,lock_state=final,game_tab=box,game=491073
-	box_start='https://www.mlb.com/gameday/'
-	box_end='#game_state=final,lock_state=final,game_tab=box,game=491073'
-
 	opener = urllib2.build_opener()
 	try:
 		print "linescore is" + linescore
@@ -186,15 +167,12 @@ def get_game_scores(teamdir,league):
 
 	# make the boxscore url
 	if league == 'mlb':
-		print "game_pk is %s " % game_pk
-		print "home_team_code is %s" % home_team_code
-		print "away_team_code is %s" % away_team_code
+		box_start='https://www.mlb.com/gameday/'
+		box_end='#game_state=final,lock_state=final,game_tab=box,game=491073'
 		box_uri = boxteams[away_team_code] + "-vs-" + boxteams[home_team_code] +"/"
 		box = box_start+box_uri+ game_pk+box_end
-		print "box is %s" % box
 	else:
 		box = "http://www.milb.com/scoreboard/index.jsp?cid=&lid=&org=141&sc=&sid=milb&t=affiliate&ymd=%s" % yyyymmdd
-		print "box is %s" % box
 	return hometeam,awayteam,homeruns,awayruns,box
 
 # scores
