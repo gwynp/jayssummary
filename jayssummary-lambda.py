@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 	#aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
 	#aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
 	aws_jayssummary_bucket = 'jaysummary.com'
-
+	SNS_TOPIC = os.environ.get("SNS_TOPIC")
 	# set the working directory
 	titledate='{dt:%A} {dt:%B} {dt.day}, {dt.year}'.format(dt=datetime.datetime.now())
 	#homedir=dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -256,9 +256,26 @@ def lambda_handler(event, context):
 	env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"]))
 	template = env.get_template( "template.html")
 	result = template.render( titledate=titledate, scores=scores, games=games, posts=allposts)
-	#print result
+	print result
+	#with open("index.html", "wb") as fh:
+	#    fh.write(result.encode('utf-8'))
+	#fh.close()
+
+	# copy to AWs S3 bucket
+	#print aws_access_key
+	#print aws_secret_key
+	#print aws_jayssummary_bucket
+	#conn = tinys3.Connection(aws_access_key,aws_secret_key,tls=True,endpoint='s3-us-west-2.amazonaws.com')
+	#current_dir = os.getcwd()
+	#index_file = current_dir + '/index.html'
+	#findex = open(index_file,'rb')
+	#conn.upload('index.html',findex,'jayssummary.com')
+	#findex.close()
 
 	s3 = boto3.resource('s3', config=Config(signature_version='s3v4'))
 	object = s3.Object('jayssummary.com','index.html')
 	object.put(Body=result,ContentType='text/html')
+	sns = boto3.resource('sns')
+	topic = sns.Topic(SNS_TOPIC)
+	topic.publish(Subject="Jayssummary", Message="Page Build Complete")
 	return "it's done"
