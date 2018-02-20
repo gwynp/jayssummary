@@ -35,9 +35,7 @@ def lambda_handler(event, context):
 	feeds = {
 			'Battersbox': 'http://www.battersbox.ca/backend/geeklog.rdf',
 			'Hum and Chuck': 'http://www.humandchuck.com/wwwhumandchuckcom?format=rss',
-			'Toronto Sun': 'http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$',
 			'The Score': 'https://feeds.thescore.com/baseball/teams/4.rss',
-			'Bunt to the Gap': 'https://bunttothegap.com/feed/podcast/',
 			'Jays in the House': 'http://www.jaysinthehouse.com/feeds/posts/default',
 			'Bluebird Banter': 'http://www.bluebirdbanter.com/rss'
 	}

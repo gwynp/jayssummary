@@ -12,14 +12,14 @@ import httplib
 import urllib2
 import json
 import feedparser
-import tinys3
+import boto3
 import yaml
 import jinja2
 
 # get the S3 keys and bucket name from the environment
 aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
 aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-aws_jayssummary_bucket = 'jaysummary.com'
+aws_jayssummary_bucket = 'jayssummary.com'
 
 # set the working directory
 titledate='{dt:%A} {dt:%B} {dt.day}, {dt.year}'.format(dt=datetime.datetime.now())
@@ -30,14 +30,13 @@ link_count=0
 feeds = {
 		'Battersbox': 'http://www.battersbox.ca/backend/geeklog.rdf',
 		'Hum and Chuck': 'http://www.humandchuck.com/wwwhumandchuckcom?format=rss',
-		'Toronto Sun': 'http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$',
 		'The Score': 'https://feeds.thescore.com/baseball/teams/4.rss',
-		'Bunt to the Gap': 'https://bunttothegap.com/feed/podcast/',
 		'Jays in the House': 'http://www.jaysinthehouse.com/feeds/posts/default',
 		'Bluebird Banter': 'http://www.bluebirdbanter.com/rss'
 }
 #feeds = ["http://www.bluebirdbanter.com/rss"]
-
+		#'Toronto Sun': 'http://www.torontosun.com/g00/2_d3d3LnRvcm9udG9zdW4uY29t_/TU9SRVBIRVVTMTAkaHR0cDovL3d3dy50b3JvbnRvc3VuLmNvbS9zcG9ydHMvYmx1ZWpheXMvcnNzLnhtbA%3D%3D_$/$/$/$',
+#'Bunt to the Gap': 'https://bunttothegap.com/feed/podcast/',
 teams = (("mlb","tormlb"),
 		("aaa","bufaaa"),
 		("aax","newaax"),
@@ -236,6 +235,7 @@ for key in ordered_teams:
 # and everything to allposts dict
 allposts={}
 for feedname, feedurl in feeds.iteritems():
+	print feedname
 	posts=collections.OrderedDict()
 	d = feedparser.parse(feedurl)
 	for i in range(5):
@@ -259,9 +259,8 @@ fh.close()
 print aws_access_key
 print aws_secret_key
 print aws_jayssummary_bucket
-conn = tinys3.Connection(aws_access_key,aws_secret_key,tls=True,endpoint='s3-us-west-2.amazonaws.com')
-current_dir = os.getcwd()
-index_file = current_dir + '/index.html'
-findex = open(index_file,'rb')
-conn.upload('index.html',findex,'jayssummary.com')
-findex.close()
+
+
+s3 = boto3.client('s3')
+filename = 'index.html'
+s3.upload_file(filename, aws_jayssummary_bucket, filename,ExtraArgs={'ContentType': 'text/html'})
