@@ -104,7 +104,6 @@ def get_yesterday():
 # schedule values
 def get_game_values(teamdir):
 	linescore = jaysdir + '/linescore.xml'
-	print linescore
 	file = urllib2.urlopen(linescore)
 	data = file.read()
 	file.close()
@@ -134,7 +133,6 @@ def get_game_values(teamdir):
 		homefirstname = 'TBD'
 		homesurname=''
 
-	print "done for %s %s" % (hometeam, awayteam)
 	return gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname, awayteam, hometeam
 
 #yesterdays scores
@@ -142,7 +140,6 @@ def get_game_scores(teamdir,league):
 	linescore = jaysdir + '/boxscore.json'
 	opener = urllib2.build_opener()
 	try:
-		print "linescore is" + linescore
 		f = opener.open(linescore)
 		json_data = json.loads(f.read())
 		hometeam = json_data["data"]["boxscore"]['home_fname']
@@ -175,8 +172,8 @@ def get_game_scores(teamdir,league):
 	return hometeam,awayteam,homeruns,awayruns,box
 
 # scores
+print "getting yesterdays results"
 ordered_teams = collections.OrderedDict(teams)
-#scores={}
 scores=[]
 link_count = 0
 for key in ordered_teams:
@@ -184,44 +181,39 @@ for key in ordered_teams:
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
-
 	r  = requests.get(url)
 	data = r.text
-	soup = BeautifulSoup(data)
+	soup = BeautifulSoup(data, "html.parser")
 	for link in soup.find_all('a'):
 		if "gid" in str(link.get('href')) and str(teamabv) in str(link.get('href')):
 			jaysuri = str(link.get('href'))
 			link_count = link_count + 1
-			jaysuri = jaysuri[:-1]
+			jaysuri = jaysuri[7:-1]
 			jaysdir = url + "/" + jaysuri
 			(hometeam,awayteam,homeruns,awayruns,box) = get_game_scores(jaysdir,league)
-			#print "hometeam" + hometeam
 			if hometeam:
-				#print "in here"
 				level=levels[key]
 				scores.append([level,hometeam,awayteam,homeruns,awayruns,box])
 
-
 #games
+print "getting schedule"
 game_count = 0
 games=[]
 for key in ordered_teams:
 	year,month,month_word,day = get_today()
 	message = ''
-	#print >> fo,"<li class=\"collection-header\"><b>%s</b></li>" % levels[key]
 	league = key
 	teamabv = ordered_teams[key]
 	url = "http://gd2.mlb.com/components/game/" + key + "/year_" + year + "/month_" + month + "/day_" + day
 	r  = requests.get(url)
 	data = r.text
-	soup = BeautifulSoup(data)
+	soup = BeautifulSoup(data, "html.parser")
 	for link in soup.find_all('a'):
 		if "gid" in str(link.get('href')) and str(teamabv) in str(link.get('href')):
 			jaysuri = str(link.get('href'))
 			link_count = link_count + 1
-			jaysuri = jaysuri[:-1]
+			jaysuri = jaysuri[7:-1]
 			jaysdir = url + "/" + jaysuri
-			#print "jaysdir = " + jaysdir
 			game_count = game_count + 1
 			level=levels[key]
 			(gametime, timezone, venue, homefirstname, homesurname, awayfirstname, awaysurname,awayteam,hometeam) = get_game_values(jaysdir)
@@ -233,19 +225,16 @@ for key in ordered_teams:
 # loop through this and pass the urls to feedparser
 # and get the most recent 5 posts
 # and everything to allposts dict
+print "processing feeds"
 allposts={}
 for feedname, feedurl in feeds.iteritems():
-	print feedname
 	posts=collections.OrderedDict()
 	d = feedparser.parse(feedurl)
 	for i in range(5):
 		postlink = d.entries[i]['link']
 		posttitle = d['entries'][i]['title']
 		posts[posttitle]=postlink
-		#print i
-		#print posttitle
 	allposts[feedname]=posts
-	#print posts
 
 # use jinja2 and the template.html to produce the index.html file
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(["./"]))
@@ -256,11 +245,7 @@ with open("index.html", "wb") as fh:
 fh.close()
 
 # copy to AWs S3 bucket
-print aws_access_key
-print aws_secret_key
-print aws_jayssummary_bucket
-
-
+print "sending to s3"
 s3 = boto3.client('s3')
 filename = 'index.html'
 s3.upload_file(filename, aws_jayssummary_bucket, filename,ExtraArgs={'ContentType': 'text/html'})
